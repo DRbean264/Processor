@@ -5,7 +5,7 @@
 ## Description of the Circuit Diagram
 >Below is the circuit diagram of our design:
 
-![image](https://github.com/DRbean264/Processor/tree/master/IMG/processor_structure.png)
+![image](https://github.com/DRbean264/Processor/blob/master/IMG/processor_structure.png)
 In order to accomodate the exception requirements which could be introduced by add/sub/addi these three operations, we add a **new control bit** (called **EXP**) and design some **new datapaths**.
 For example, consider the instruction **add $1, $2, $3 with r2 = -2147483648 and r3 = -1**.
 After processing this instruction, **r1 should store the overflow value 2147483647** while **rstatus should be set to 1**. Thus the RegFile may be written twice in one processor clock cycle.
@@ -14,7 +14,7 @@ In order to accommodate this requirement, we use the first half processor clock 
 ## Description of the Clock
 >Below is the clock of our design.
 
-![image](https://github.com/DRbean264/Processor/tree/master/IMG/clock_logic.png)
+![image](https://github.com/DRbean264/Processor/blob/master/IMG/clock_logic.png)
 
 | Name        | Freqency (Mhz)   |  Trigger  |
 | --------   | -----:  | :----:  |
