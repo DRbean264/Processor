@@ -4,12 +4,11 @@ module regfile(
 	data_readRegB,
 	
 	/* debugging */
-	register0, register1, register2, register3, register4, register5, register6, register30
-//	register14, register15,
+	register0, register1, register2, register3, register4, register5, register6, register30, register31,
+//	register7,
+//	register8, register9, register10, register11, register12, register13, register14, register15,
 //	register16, register17, register18, register19, register20, register21, register22, register23,
-//	register24, register25,
-//	register26, register27, register28, register29, 
-	//register31
+//	register24, register25, register26, register27, register28, register29
 );
 	input clock, ctrl_writeEnable, ctrl_reset;
 	input [4:0] ctrl_writeReg, ctrl_readRegA, ctrl_readRegB;
@@ -17,13 +16,12 @@ module regfile(
 	output [31:0] data_readRegA, data_readRegB;
 
 	/* debugging */
-	output [31:0] register0, register1, register2, register3, register4, register5, register6, register30;
-//	register5, register6, register7,
+	output [31:0] register0, register1, register2, register3, 
+	register4, register5, register6, register30, register31; 
+//	register7,
 //	register8, register9, register10, register11, register12, register13, register14, register15,
 //	register16, register17, register18, register19, register20, register21, register22, register23,
-//	register24, 
-//	register26, register27, register28, register29, 
-//	register31;
+//	register24, register25, register26, register27, register28, register29;
 	
 	
 	reg[31:0] registers[31:0];
@@ -36,6 +34,8 @@ module regfile(
 	assign register4 = registers[4];
 	assign register5 = registers[5];
 	assign register6 = registers[6];
+   assign register30 = registers[30];
+	assign register31 = registers[31];
 //	assign register7 = registers[7];
 //	assign register8 = registers[8];
 //	assign register9 = registers[9];
@@ -59,14 +59,12 @@ module regfile(
 //	assign register27 = registers[27];
 //	assign register28 = registers[28];
 //	assign register29 = registers[29];
-	assign register30 = registers[30];
-//	assign register31 = registers[31];
 	
 	
 	always @(posedge clock or posedge ctrl_reset)
 	begin
 		if(ctrl_reset)
-			begin
+			begin : loopReg
 				integer i;
 				for(i = 0; i < 32; i = i + 1)
 					begin

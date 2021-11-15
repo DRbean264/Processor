@@ -1,10 +1,10 @@
 module alu(data_operandA, data_operandB, ctrl_ALUopcode,
-			ctrl_shiftamt, data_result, isNotEqual, isLessThan, overflow);
+			ctrl_shiftamt, data_result, isNotEqual, isBiggerThan, overflow);
 
 	input [31:0] data_operandA, data_operandB;
 	input [4:0] ctrl_ALUopcode, ctrl_shiftamt;
 	output [31:0] data_result;
-	output isNotEqual, isLessThan, overflow;
+	output isNotEqual, isBiggerThan, overflow;
 	
 	wire signed[31:0] inner_A, inner_B;
 	reg signed[31:0] inner_result;
@@ -15,7 +15,7 @@ module alu(data_operandA, data_operandB, ctrl_ALUopcode,
 	assign data_result = inner_result;
 	
 	assign isNotEqual = inner_A != inner_B;
-	assign isLessThan = inner_A < inner_B;
+	assign isBiggerThan = inner_A > inner_B;
 	assign overflow = inner_cout != inner_result[31];
 	
 	always @(ctrl_ALUopcode or inner_A or inner_B or ctrl_shiftamt)

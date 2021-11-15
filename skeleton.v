@@ -11,15 +11,17 @@
 
 module skeleton(clock, reset, imem_clock, dmem_clock, processor_clock, regfile_clock
 /* the following is used for debug */
+//	, q_imem
 //	, data_readRegA, data_readRegB, q_imem, ctrl_writeEnable,
 //	opcode, rs, rt, rd, shamt, aluop, immediate,
-//	register0, register1, register2, register3, register4, register5, register6, register30
-//	register7, register8, register9, register10, register11, register12, register13, 
+//	, register0, register1, register2, register3, register4, register5, register6, register30, register31
+//	, register7, register8, register9, register10, register11, register12, register13, 
 //	register5, register6, register7,
-//	register8, register9, register10, register11, register12, register13, register14, register15,
+//	register8, register9, register10, register11, register12, register13, 
+//	register14, register15,
 //	register16, register17, register18, register19, register20, register21, register22, register23,
-//	register24, 
-//	register26, register27, register28, register29, 
+//	register24, register25, 
+//	register26, register27, register28, register29
 //	register30,
 //	register31
 );
@@ -28,11 +30,11 @@ module skeleton(clock, reset, imem_clock, dmem_clock, processor_clock, regfile_c
 //	 output [4:0] opcode, rs, rt, rd, shamt, aluop;
 //	 output [16:0] immediate;
 //	 output ctrl_writeEnable;
-//	 output [31:0] register0, register1, register2, register3, register4, register5, register6, register30;
-//	register7, register8, register9, register10, register11, register12, register13, register30;
-//	register8, register9, register10, register11, register12, register13, register14, register15,
+//	 output [31:0] register0, register1, register2, register3, register4,
+//	 register5, register6, register30, register31;
+//	register7, register8, register9, register10, register11, register12, register13, register14, register15,
 //	register16, register17, register18, register19, register20, register21, register22, register23,
-//	register24, register25, register26, register27, register28, register29, register30, register31;
+//	register24, register25, register26, register27, register28, register29;
 	 
 //	 output [31:0] q_imem;
 	 
@@ -91,11 +93,12 @@ module skeleton(clock, reset, imem_clock, dmem_clock, processor_clock, regfile_c
         data_writeReg,
         data_readRegA,
         data_readRegB,
-//		  register0, register1, register2, register3, register4, register5, register6, register30,
-//		  register5, register6, register7,
-//	register8, register9, register10, register11, register12, register13, register14, register15,
-//	register16, register17, register18, register19, register20, register21, register22, register23,
-//	register24, register25, register26, register27, register28, register29, register30, register31
+//		  register0, register1, register2, register3, register4, register5, register6, register30, register31
+//		  register5, register6, 
+//		, register7,
+//		register8, register9, register10, register11, register12, register13, register14, register15,
+//		register16, register17, register18, register19, register20, register21, register22, register23,
+//		register24, register25, register26, register27, register28, register29
     );
 
     /** PROCESSOR **/

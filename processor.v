@@ -100,70 +100,107 @@ module processor(
 
 	/* YOUR CODE STARTS HERE */
 	
-	//  fetch code
+	//  fetch code wire declaration
 	reg [11:0] address_imem;
-
+	reg [11:0] address_imem_next;
+	
+	//  decode instruction wire declaration
+	wire [4:0] opcode, rs, rt, rd, shamt;
+	wire [16:0] immediate;
+	wire [31:0] extended;
+	wire [26:0] T;
+	wire [31:0] UX_T;
+	wire [4:0] ctrl_writeReg0;
+	
+	//  control bits wire declaration
+	wire [4:0] aluop;
+	wire ctrl_writeEnable, ctrl_writeEnable_raw,  ctrl_writeEnable_and_clock;
+	wire Rdst, ALUinB, wren_raw, wren, Rwd, JP, EXP, except_sel, BNE, JAL, JR, BLT, BEX, SETX;
+	wire [31:0] exception;
+	
+	//  execution wire declaration
+	wire [31:0] data_operandB, data_result;
+	wire isNotEqual, isBiggerThan, overflow;
+	
+	//  write regfile wire declaration
+	wire [31:0] data_writeReg_before_ovf;
+	wire [31:0] data_writeReg_before_jal, data_writeReg_jal;
+	wire [31:0] data_writeReg_before_setx;
+	
+	//  fetch code
+	always @(*) begin
+		address_imem_next <= address_imem + 12'd1;
+		if (JP == 1'b1 || JAL == 1'b1)
+			address_imem_next <= T[11:0];
+		else if (BNE == 1'b1 && isNotEqual == 1'b1)
+			address_imem_next <= address_imem + 12'd1 + extended[11:0];
+		else if (JR == 1'b1)
+			address_imem_next <= data_readRegB[11:0];
+		else if (BLT == 1'b1 && isBiggerThan == 1'b1)
+			address_imem_next <= address_imem + 12'd1 + extended[11:0];
+		else if (BEX == 1'b1 && data_readRegA != 32'd0)
+			address_imem_next <= T[11:0];
+//		else
+//			address_imem_next <= address_imem + 12'd1;
+	end
+	
 	always @(posedge clock or posedge reset) begin
 		if (reset == 1'b1) begin  //  reset
-			address_imem <= 12'd0;
+			address_imem <= 12'b111111111111;
 		end 
 		else begin
-			address_imem <= address_imem + 1'b1;
+			address_imem <= address_imem_next;
 		end
 	end
 
 	//  decode instruction
-	wire [4:0] opcode, rs, rt, rd, shamt;
-	wire [16:0] immediate;
-	wire [31:0] extended;
-
 	assign opcode = q_imem[31:27];
 	assign rd = q_imem[26:22];
 	assign rs = q_imem[21:17];
 	assign rt = q_imem[16:12];
 	assign shamt = q_imem[11:7];
 	assign immediate = q_imem[16:0];
+	assign T = q_imem[26:0];
+	assign UX_T[26:0] = T;
+	assign UX_T[31:27] = 5'd0;
 
-	assign ctrl_readRegA = rs;
+	assign ctrl_readRegA = (BEX == 1) ? 5'd30 : rs;
 	assign ctrl_readRegB = (Rdst == 1) ? rt : rd;
-	assign ctrl_writeReg = (except_sel == 1) ? 5'd30 : rd;
+	assign ctrl_writeReg0 = (JAL == 1) ? 5'd31 : rd;
+	assign ctrl_writeReg = (except_sel == 1 || SETX == 1) ? 5'd30 : ctrl_writeReg0;
 
 	sign_extension sx(extended, immediate);
 	
 	//  control bits
-	wire [4:0] aluop;
-	wire ctrl_writeEnable, ctrl_writeEnable_raw,  ctrl_writeEnable_and_clock;
-	wire Rdst, ALUinB, wren_raw, wren, Rwd, JP, BR, EXP, except_sel;
-	control_generator c_gen(ctrl_writeEnable_raw, Rdst, ALUinB, wren_raw, Rwd, JP, BR, aluop, EXP, 
-	opcode, q_imem[6:2]);
+	control_generator c_gen(ctrl_writeEnable_raw, Rdst, ALUinB, wren_raw, Rwd, JP, aluop,
+	EXP, opcode, q_imem[6:2], BNE, JAL, JR, BLT, BEX, SETX);
+	
 	and write_dmem(wren, wren_raw, ~clock); // the write enable bit of Data Memory
 	and write_regfile(ctrl_writeEnable_and_clock, ctrl_writeEnable_raw, clock); // the write enable bit of regfile
-	//
+	// only enable write to regfile in the second half cycle when an exception happens
 	assign ctrl_writeEnable = (except_sel == 1) ? ctrl_writeEnable_raw : ctrl_writeEnable_and_clock;
 	// only enable exception bit in the second half cycle and the op is add/sub/addi and overflow happens
 	and except_regfile(except_sel, EXP, overflow, ~clock);
 	
 	//  exception bits
-	wire [31:0] exception;
 	exception_bits excep(exception, opcode, aluop);
 	
 	//  execute instruction
-	wire [31:0] data_operandB, data_result;
-	wire isNotEqual, isLessThan, overflow;
-
 	assign data_operandB = (ALUinB == 1) ? extended : data_readRegB;
 
 	alu alu0(data_readRegA, data_operandB, aluop,
-			shamt, data_result, isNotEqual, isLessThan, overflow);
+			shamt, data_result, isNotEqual, isBiggerThan, overflow);
 
 	//  interact with data memory
 	assign address_dmem = data_result[11:0];
 	assign data = data_readRegB;
 
 	//  write regfile
-	wire [31:0] data_writeReg_before_ovf;
+	assign data_writeReg_jal[11:0] = address_imem + 12'd1;
+	assign data_writeReg_jal[31:12] = 10'd0;
 	assign data_writeReg_before_ovf = (Rwd == 1) ? q_dmem : data_result;
-	assign data_writeReg = (except_sel == 1) ? exception : data_writeReg_before_ovf;
-	
+	assign data_writeReg_before_setx = (except_sel == 1) ? exception : data_writeReg_before_ovf;
+	assign data_writeReg_before_jal = (SETX == 1) ? UX_T : data_writeReg_before_setx;
+	assign data_writeReg = (JAL == 1) ? data_writeReg_jal : data_writeReg_before_jal;
 	
 endmodule
