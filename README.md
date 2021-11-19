@@ -27,6 +27,6 @@ In order to accommodate this requirement, we use the first half processor clock 
 >Below are the screenshots of our results using the grade mif file at the maximum clock frequency (we set the original clock frequency to **90.91Mhz**, thus the processor clock is 8 times slower, the RegFile clock 4 times slower, and the two memory clock 2 times slower).
 
 ### Functional Simulation
-![image](https://github.com/DRbean264/Processor/blob/master/IMG/results_final_88ns.jpg)
+![image](https://github.com/DRbean264/Processor/blob/master/IMG/results_final_88ns_nolatency.jpg)
 ### Timing Simulation
-![image](https://github.com/DRbean264/Processor/blob/master/IMG/results_final_88ns_nolatency.png)
+![image](https://github.com/DRbean264/Processor/blob/master/IMG/results_final_88ns.png)
